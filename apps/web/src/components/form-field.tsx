@@ -1,7 +1,7 @@
 import { Input } from "@better-t-stack-template/ui/components/input";
 import { Label } from "@better-t-stack-template/ui/components/label";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import type { ComponentProps } from "react";
+import { useId, type ComponentProps } from "react";
 
 /** Labelled input bound to a TanStack Form field, with validation errors. */
 export function FormField({
@@ -12,12 +12,14 @@ export function FormField({
   ComponentProps<typeof Input>,
   "id" | "name" | "value" | "onChange" | "onBlur"
 >) {
+  // Unique id so two forms on one page (e.g. a dialog) never share label targets.
+  const id = `${useId()}-${field.name}`;
   const errors = field.state.meta.errors as Array<{ message?: string } | string | undefined>;
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.name}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
-        id={field.name}
+        id={id}
         name={field.name}
         value={field.state.value as string}
         onBlur={field.handleBlur}

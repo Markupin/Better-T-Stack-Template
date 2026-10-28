@@ -184,7 +184,8 @@ function AdminUsersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="min-w-44">
                             <DropdownMenuItem
-                              disabled={Boolean(u.banned)}
+                              // Better Auth does not allow impersonating admins by default.
+                              disabled={Boolean(u.banned) || role === "admin"}
                               onClick={() => impersonate(u.id)}
                             >
                               Impersonate
