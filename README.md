@@ -362,6 +362,8 @@ your-domain.com {
 
 `BETTER_AUTH_URL` 是 https 时，Better Auth 会自动给 cookie 加 `Secure`。
 
+**限流与客户端 IP**：Better Auth 在生产环境默认开启限流（按 IP + 路径，例如登录 10 秒 3 次）。它从 `X-Forwarded-For` 读取客户端 IP，所以必须经过会设置这个头的反向代理（Caddy 默认会用真实客户端 IP 覆盖该头）。没有这个头时所有请求共用一个限流桶（日志会有 "could not determine a client IP" 警告）。代理链有多跳时，在 `packages/auth/src/index.ts` 配置 `advanced.ipAddress.trustedProxies`。
+
 **其他**
 
 - 更新：`git pull && bun run docker:up`（迁移会自动执行）
@@ -381,7 +383,7 @@ your-domain.com {
 ## Security notes（安全说明）
 
 - 所有权限在服务端强制：oRPC 守卫 + Better Auth 插件自身的权限检查；前端守卫只负责跳转。
-- 保留 Better Auth 默认安全设置：HttpOnly + SameSite=Lax cookie（https 下 Secure）、Origin 校验（CSRF，仅信任 `BETTER_AUTH_URL`）、生产环境默认限流、scrypt 密码哈希、注册 / 找回密码不泄露邮箱是否存在。
+- 保留 Better Auth 默认安全设置：HttpOnly + SameSite=Lax cookie（https 下 Secure）、Origin 校验（CSRF，仅信任 `BETTER_AUTH_URL`）、生产环境默认限流（依赖反向代理传 `X-Forwarded-For`，见部署一节）、scrypt 密码哈希、注册 / 找回密码不泄露邮箱是否存在。
 - 会话 token 不会序列化到页面（`getUser` 去掉了 `session.token`）。
 - 登录后的跳转只允许站内相对路径（`lib/redirect.ts`）。
 - 邮件链接用 `BETTER_AUTH_URL` 拼接，不信任请求的 Host 头。
