@@ -12,6 +12,12 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  ssr: {
+    // Bundle all SSR deps in one pass. Otherwise CJS deps that require("react")
+    // (use-sync-external-store via @base-ui) resolve a second React copy at
+    // runtime and SSR crashes with "Cannot read properties of null (useSyncExternalStore)".
+    noExternal: true,
+  },
   plugins: [
     varlockVitePlugin({ ssrInjectMode: "auto-load" }),
     tailwindcss(),
