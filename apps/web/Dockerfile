@@ -19,4 +19,6 @@ EXPOSE 3001
 
 # SSR chunks require workspace dependencies at runtime
 WORKDIR /app/apps/web
+# Run as the unprivileged user shipped with the node image.
+USER node
 CMD ["node", ".output/server/index.mjs"]
