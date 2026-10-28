@@ -42,8 +42,12 @@
     "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./packages/db/",
     "postinstall": "varlock codegen --path ./apps/web/ && varlock codegen --path ./packages/db/",
     "auth:generate": "cd apps/web && bun run auth:generate",
-    "check": "oxlint && oxfmt --write",
-    "test": "turbo run test"
+    "check": "oxlint && oxfmt --check",
+    "test": "turbo run test",
+    "lint": "oxlint",
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "db:seed": "bun run --cwd apps/web db:seed"
   },
   "dependencies": {
     "zod": "catalog:"
