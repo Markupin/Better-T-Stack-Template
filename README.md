@@ -371,6 +371,47 @@ your-domain.com {
 - 备份：数据在 volume `better-t-stack-template_postgres_data`；`docker compose down -v` 会删除数据
 - 修改 `apps/web/.env` 后需要重新构建镜像（构建时会校验配置）
 
+## 部署到 Vercel 预览
+
+用于快速预览（Vercel Hobby + Neon 免费 Postgres），不影响上面的 Docker / VPS 方案。
+
+**Vercel 项目设置**
+
+| 设置             | 值                                                     |
+| ---------------- | ------------------------------------------------------ |
+| Root Directory   | `apps/web`                                             |
+| Framework Preset | Other                                                  |
+| Install Command  | `bun install`（Vercel 根据 `bun.lock` 用 Bun）         |
+| Build Command    | `bun run build`                                        |
+| Output           | 不用填，Nitro 的 `vercel` preset 生成 `.vercel/output` |
+
+`apps/web/vite.config.ts` 在 `VERCEL=1` 时自动切到 Nitro `vercel` preset（可用 `NITRO_PRESET` 覆盖），其他情况仍是 `node-server`。
+
+**环境变量（Production + Preview）**
+
+- `DATABASE_URL`：Neon 的 pooled 连接串（在 Vercel → Storage 创建 Neon 数据库并连接到项目后自动注入）
+- `BETTER_AUTH_SECRET`：`openssl rand -base64 32`
+- `BETTER_AUTH_URL`：生产域名，例如 `https://<项目>.vercel.app`
+- `_VARLOCK_ENV_KEY`：`bunx varlock generate-key --plain`
+
+不需要设置 `NODE_ENV`：build 脚本本身用 `NODE_ENV=production` 构建。
+
+**varlock 在 Vercel 上的处理**：Vercel 函数里只有打包产物，没有 varlock 可执行文件和 `.env.schema`，所以在 Vercel 上构建时会把校验后的环境变量用 `_VARLOCK_ENV_KEY` 加密后打进服务端 bundle（`ssrInjectMode: "resolved-env"`），运行时再解密。没设置 `_VARLOCK_ENV_KEY` 时构建直接失败，避免明文。构建日志里那条 "ships your resolved env as plaintext" 提示可以忽略（实际已加密）。**修改环境变量后需要重新部署才会生效。**
+
+**数据库迁移和管理员**（在本地执行，连接串用 Neon 的直连 / unpooled 地址）：
+
+```bash
+DATABASE_URL='<Neon unpooled URL>' bun run db:migrate
+DATABASE_URL='<Neon unpooled URL>' SEED_ADMIN_EMAIL=you@example.com \
+  SEED_ADMIN_PASSWORD='...' bun run db:seed
+```
+
+**其他**
+
+- 邮件（验证 / 重置 / 邀请链接）打印在 Vercel 项目的 Logs（运行时日志）里
+- Preview 部署的 `BETTER_AUTH_URL` 也指向生产域名，所以登录请在生产域名上进行
+- 推荐在 Vercel 连接 GitHub 仓库自动部署。如果用 `vercel deploy` 从本地上传，请从干净的 `git` 导出目录上传，避免把本地 `.env` 一起传上去
+
 ## 切换到 Cloudflare 版
 
 计划中的 Cloudflare 变体（此处只记录方案，未实现）：
