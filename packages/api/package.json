@@ -1,0 +1,25 @@
+{
+  "name": "@better-t-stack-template/api",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "check-types": "tsc -b"
+  },
+  "dependencies": {
+    "@better-t-stack-template/auth": "workspace:*",
+    "@better-t-stack-template/db": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@better-t-stack-template/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
